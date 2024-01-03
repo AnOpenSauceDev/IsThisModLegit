@@ -3,6 +3,6 @@ A pretty tiny mod that checks the hashes of every mod in your mods folder agains
 
 Works as long **as you have less than 300 _individual (.jar file)_ mods** (because you'll get rate-limited going past that.)
 
-Due to this mod using the Modrinth API, this will fail checks on CurseForge/Github binaries that aren't identical to what's on Modrinth.
+Due to this mod using the Modrinth API, this will fail checks on binaries from CurseForge/Github that aren't identical to what's on Modrinth.
 
-This mod is very much in its infancy, with quite a bit work still to go.
+This mod is very much in its infancy, with quite a bit of work still to go.
