@@ -47,7 +47,14 @@ public class IsThisModLegit implements ModInitializer {
                             conn.connect();
                             int responseCode = conn.getResponseCode();
                             conn.disconnect();
-                            // the only responses that exist (as of now) are either 200 or 404.
+
+                                // if a 410 is returned, that means the API is now dead.
+                                if(responseCode == 410){
+                                    logger.error("Modrinth has seemingly stopped supporting the backend used by this mod. This mod will now abort.");
+                                    break;
+                                }
+
+                                // the only responses that exist (as of now) are either 200 or 404.
                             if(responseCode == 200){
                                 logger.info("An exact hash of mod " + mod.getMetadata().getName() + " was located on Modrinth! This mod comes from a legitimate source.");
                             }else {
