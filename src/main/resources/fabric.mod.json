@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "isthismodlegit",
+  "version": "${version}",
+
+  "name": "Is This Mod Legit?",
+  "description": "Checks the hashes of the mods that you're using against modrinth, ensuring authenticity.",
+  "authors": [],
+  "contact": {},
+
+  "license": "Apache-2.0",
+  "icon": "assets/isthismodlegit/icon.png",
+
+  "environment": "*",
+  "entrypoints": {},
+
+      "mixins": [
+        "isthismodlegit.mixins.json"
+      ],
+
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+        "fabric": "*",
+    "minecraft": "${minecraft_version}"
+  }
+}
