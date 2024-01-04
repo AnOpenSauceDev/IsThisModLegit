@@ -12,7 +12,10 @@ import java.net.*;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.stream.IntStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 
@@ -24,10 +27,46 @@ public class IsThisModLegit implements ModInitializer {
 
     public static Logger logger = LoggerFactory.getLogger("Is This Mod Legit?");
 
+    public static List<String> hashesList = new ArrayList<>();
+
+    public static String[] ITMLCACHEDATA = new String[300]; //TODO: make into a list
+
     @Override
     public void onInitialize() {
+        grabCachedHashes();
         CheckModAuthenticity();
     }
+
+    public static void grabCachedHashes() {
+        try {
+            int x = 0;
+        BufferedReader reader = new BufferedReader( new FileReader(FabricLoader.getInstance().getConfigDir().resolve("ITML.cache").toFile()));
+            String hash = reader.readLine();
+        while (hash != null){
+            ITMLCACHEDATA[x] = hash;
+            hash = reader.readLine();
+            x++;
+
+        }
+
+
+        }catch (Exception e){
+            //e.printStackTrace();
+            logger.warn("cache does not exist! Or another FS-related bug.");
+        }
+    }
+
+    // if a hash is in this file, it's safe.
+    public static void handleModHashDB(String[] hashes) throws IOException {
+        FileWriter writer = new FileWriter(FabricLoader.getInstance().getConfigDir().resolve("ITML.cache").toFile(),true);
+        for (int i = 0; i < hashes.length; i++) {
+            writer.write(hashes[i] + "\n");
+        }
+        writer.close();
+
+    }
+
+
 
     //TODO: Optimize a bit more
     public static void CheckModAuthenticity() {
@@ -46,6 +85,7 @@ public class IsThisModLegit implements ModInitializer {
 
                             // ugly code
                             String hash = getSHA1(path.toFile()); // we use SHA1 because it's a bit faster.
+                            if(!Arrays.stream(ITMLCACHEDATA).anyMatch(Predicate.isEqual(hash))){
                             String modrinthCheck = VERSION_FILE_HASH_URL + hash + "?algorithm=sha1";
                             URL url = new URL(modrinthCheck);
                             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -65,6 +105,10 @@ public class IsThisModLegit implements ModInitializer {
                             // the only responses that exist (as of now) are either 200 or 404.
                             if(responseCode == 200){
                                 logger.info("An exact hash of mod " + mod.getMetadata().getName() + " was located on Modrinth! This mod comes from a legitimate source.");
+
+                                hashesList.add(hash);
+
+
                             }else {
                                 // if the mod isn't an edge-case like MC or Fabric itself...
                                 if(!mod.getMetadata().getName().equals("Fabric Loader") && !mod.getMetadata().getName().equals("Minecraft")){
@@ -74,7 +118,11 @@ public class IsThisModLegit implements ModInitializer {
                                     logger.warn("The mod hash of " + mod.getMetadata().getName() + " wasn't on modrinth, however it's probably nothing to worry about, unless you see this message twice for the same mod.");
                                 }
                             }
+                            }else {
+                                logger.info("assuming mod: " + mod.getMetadata().getName() + " is safe due to cached data.");
+                            }
                         }
+
 
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -83,7 +131,14 @@ public class IsThisModLegit implements ModInitializer {
                 }
             }
         });
+        try {
+            String[] data = hashesList.toArray(new String[0]);
+            handleModHashDB(data);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
+
 
 
     public static String getSHA1(File file) throws
