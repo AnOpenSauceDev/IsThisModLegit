@@ -32,10 +32,11 @@ public class IsThisModLegit implements ModInitializer {
     //TODO: Optimize a bit more
     public static void CheckModAuthenticity() {
 
-        long time = System.nanoTime();
+
 
         Stream<ModContainer> modStream = FabricLoader.getInstance().getAllMods().stream();
 
+        // at least 3.5X faster than a for loop, and that's with no flags!
         modStream.parallel().forEach(mod ->{
             // don't bother looking for Jar-In-Jar'ed mods (since they're baked, and therefore in the modrinth version)
             if(mod.getOrigin().getKind() == ModOrigin.Kind.PATH){
@@ -82,10 +83,6 @@ public class IsThisModLegit implements ModInitializer {
                 }
             }
         });
-
-        long finaltime = System.nanoTime() - time;
-        System.out.println("that took: " + finaltime + " nanoseconds!");
-
     }
 
 

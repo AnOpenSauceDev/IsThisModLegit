@@ -12,4 +12,4 @@ This mod is very much in its infancy, with quite a bit of work still to go.
 
 **TODO:**
 - Cache results in a **secure** way to not send nearly as many API calls.
-- multithread everything
+- ~~multithread everything~~ Done!
