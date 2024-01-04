@@ -12,6 +12,8 @@ import java.net.*;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 
 public class IsThisModLegit implements ModInitializer {
@@ -29,14 +31,19 @@ public class IsThisModLegit implements ModInitializer {
 
     //TODO: Optimize a bit more
     public static void CheckModAuthenticity() {
-        for (ModContainer mod: FabricLoader.getInstance().getAllMods()){
-                // don't bother looking for Jar-In-Jar'ed mods (since they're baked, and therefore in the modrinth version)
-                if(mod.getOrigin().getKind() == ModOrigin.Kind.PATH){
-                    for(Path path: mod.getOrigin().getPaths()){
-                        try {
-                            if(path.toFile().isFile()){
 
-                                // ugly code
+        long time = System.nanoTime();
+
+        Stream<ModContainer> modStream = FabricLoader.getInstance().getAllMods().stream();
+
+        modStream.parallel().forEach(mod ->{
+            // don't bother looking for Jar-In-Jar'ed mods (since they're baked, and therefore in the modrinth version)
+            if(mod.getOrigin().getKind() == ModOrigin.Kind.PATH){
+                for(Path path: mod.getOrigin().getPaths()){
+                    try {
+                        if(path.toFile().isFile()){
+
+                            // ugly code
                             String hash = getSHA1(path.toFile()); // we use SHA1 because it's a bit faster.
                             String modrinthCheck = VERSION_FILE_HASH_URL + hash + "?algorithm=sha1";
                             URL url = new URL(modrinthCheck);
@@ -48,34 +55,37 @@ public class IsThisModLegit implements ModInitializer {
                             int responseCode = conn.getResponseCode();
                             conn.disconnect();
 
-                                // if a 410 is returned, that means the API is now dead.
-                                if(responseCode == 410){
-                                    logger.error("Modrinth has seemingly stopped supporting the backend used by this mod. This mod will now abort.");
-                                    break;
-                                }
+                            // if a 410 is returned, that means the API is now dead.
+                            if(responseCode == 410){
+                                logger.error("Modrinth has seemingly stopped supporting the backend used by this mod. This mod will now abort.");
+                                break;
+                            }
 
-                                // the only responses that exist (as of now) are either 200 or 404.
+                            // the only responses that exist (as of now) are either 200 or 404.
                             if(responseCode == 200){
                                 logger.info("An exact hash of mod " + mod.getMetadata().getName() + " was located on Modrinth! This mod comes from a legitimate source.");
                             }else {
                                 // if the mod isn't an edge-case like MC or Fabric itself...
                                 if(!mod.getMetadata().getName().equals("Fabric Loader") && !mod.getMetadata().getName().equals("Minecraft")){
-                                logger.warn("The mod hash of " + mod.getMetadata().getName() + " was NOT found on Modrinth! This mod may not be legitimate!");
+                                    logger.warn("The mod hash of " + mod.getMetadata().getName() + " was NOT found on Modrinth! This mod may not be legitimate!");
                                 }else {
                                     // if the mod is something core that obviously isn't on modrinth, but we aren't 100% sure.
                                     logger.warn("The mod hash of " + mod.getMetadata().getName() + " wasn't on modrinth, however it's probably nothing to worry about, unless you see this message twice for the same mod.");
                                 }
                             }
-                            }
-
-                        } catch (Exception e) {
-                            e.printStackTrace();
                         }
 
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
-                }
 
-        }
+                }
+            }
+        });
+
+        long finaltime = System.nanoTime() - time;
+        System.out.println("that took: " + finaltime + " nanoseconds!");
+
     }
 
 
