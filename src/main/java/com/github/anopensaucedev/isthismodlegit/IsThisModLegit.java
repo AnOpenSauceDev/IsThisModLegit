@@ -29,7 +29,7 @@ public class IsThisModLegit implements ModInitializer {
 
     public static List<String> hashesList = new ArrayList<>();
 
-    public static String[] ITMLCACHEDATA = new String[300]; //TODO: make into a list
+    public static List<String> ITMLCACHEDATA = new ArrayList<>(); //TODO: make into a list
 
     @Override
     public void onInitialize() {
@@ -43,9 +43,8 @@ public class IsThisModLegit implements ModInitializer {
         BufferedReader reader = new BufferedReader( new FileReader(FabricLoader.getInstance().getConfigDir().resolve("ITML.cache").toFile()));
             String hash = reader.readLine();
         while (hash != null){
-            ITMLCACHEDATA[x] = hash;
+            ITMLCACHEDATA.add(hash);
             hash = reader.readLine();
-            x++;
 
         }
 
@@ -85,7 +84,7 @@ public class IsThisModLegit implements ModInitializer {
 
                             // ugly code
                             String hash = getSHA1(path.toFile()); // we use SHA1 because it's a bit faster.
-                            if(!Arrays.stream(ITMLCACHEDATA).anyMatch(Predicate.isEqual(hash))){
+                            if(!Arrays.stream(ITMLCACHEDATA.toArray(new String[ITMLCACHEDATA.size()])).anyMatch(Predicate.isEqual(hash))){
                             String modrinthCheck = VERSION_FILE_HASH_URL + hash + "?algorithm=sha1";
                             URL url = new URL(modrinthCheck);
                             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -105,7 +104,8 @@ public class IsThisModLegit implements ModInitializer {
                             // the only responses that exist (as of now) are either 200 or 404.
                             if(responseCode == 200){
                                 logger.info("An exact hash of mod " + mod.getMetadata().getName() + " was located on Modrinth! This mod comes from a legitimate source.");
-
+                                //TODO: check if the user wants to have their cache updated
+                                logger.info("Adding " + mod.getMetadata().getName() + " to ITML's cache...");
                                 hashesList.add(hash);
 
 
@@ -119,7 +119,7 @@ public class IsThisModLegit implements ModInitializer {
                                 }
                             }
                             }else {
-                                logger.info("assuming mod: " + mod.getMetadata().getName() + " is safe due to cached data.");
+                                logger.info("assuming mod: " + mod.getMetadata().getName() + " is safe due to a matching a hash in the cache.");
                             }
                         }
 
