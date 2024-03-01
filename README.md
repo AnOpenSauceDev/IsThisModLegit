@@ -1,6 +1,6 @@
 # Is This Mod Legit?
 
-[Modrinth Link](https://modrinth.com/mod/is-this-mod-legit)
+[Modrinth Link](https://modrinth.com/mod/is-this-mod-legit) | [Web Client](https://isthismodlegit.anopensauce.dev/)
 
 A pretty tiny mod that checks the hashes of every mod in your mods folder against Modrinth to see if the mod you're using is tamper-free.
 
